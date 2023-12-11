@@ -1,0 +1,61 @@
+version: "3"
+services:
+  nosql-db:
+    image: mongo
+    container_name: nosql-db
+    volumes:
+      - ./db/:/data/db
+      
+  customer:
+    container_name: customer
+    image: ecommerce-customer-service
+    env_file:
+      - ./Customer/.env.dev
+    ports:
+      - "8001:8001"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    # volumes:
+    #   - .Customer:/app
+    #   - /app/customer/node_modules
+ 
+
+  products:
+    container_name: product
+    image: ecommerce-product-service
+    env_file:
+      - ./Products/.env.dev
+    ports:
+      - "8002:8002"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    # volumes:
+    #   - .Products:/app
+    #   - /app/products/node_modules
+
+  shopping:
+    container_name: shopping
+    image: ecommerce-shopping-service
+    env_file:
+      - ./Shopping/.env.dev
+    ports:
+      - "8004:8003"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    # volumes:
+    #   - ./Shopping:/app
+    #   - /app/shopping/node_modules
+
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./proxy
+    depends_on:
+      - products
+      - shopping
+      - customer
+    ports:
+      - 80:80
