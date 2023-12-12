@@ -17,6 +17,10 @@ class ProductService {
     }
   }
 
+async GetMerchantProducts(id:string){
+  const products = await this.repository.FindProductsByMerchant(id);
+      return formatData(products);
+}
   //GET PRODUCTS
   async GetProducts() {
     try {

@@ -41,6 +41,14 @@ export class ProductRepository {
       console.log(error)
     }
   };
+  async FindProductsByMerchant(merchantId:string){
+    try {
+      const products = await ProductModel.find({merchantId});
+      return products;
+    } catch (error) {
+      console.log(error)
+    }
+  };
   
   //FIND SELECTED PRODUCTS
   async FindSelectedProducts(selectedIds:[string]){

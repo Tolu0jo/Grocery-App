@@ -9,6 +9,7 @@ export interface IProduct{
     price:number
     available:boolean
     supplier:string
+    merchantId:string
 }
 const ProductSchema = new Schema({
     name:String,
@@ -19,6 +20,7 @@ const ProductSchema = new Schema({
     price:Number,
     available:Boolean,
     supplier:String,
+    merchantId:String,
 },{
     timestamps:true
 })

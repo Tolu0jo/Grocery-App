@@ -7,6 +7,7 @@ export interface IProductDto{
     price:number
     available:boolean
     supplier:string
+    merchantId:string
 }
 
 export type ProductPayload ={
