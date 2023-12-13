@@ -1,5 +1,5 @@
 import { MerchantRepository } from "../repository/repository";
-import { GeneratePassword, GenerateSalt, GenerateSignature, validatePassword } from "../utils";
+import { GeneratePassword, GenerateSalt, GenerateSignature, RPCRequest, validatePassword } from "../utils";
 
  
 
@@ -8,13 +8,18 @@ import { GeneratePassword, GenerateSalt, GenerateSignature, validatePassword } f
     constructor( ){
         this.repository = new MerchantRepository()
     }
-    async merchantSignUp(email:string,password:string,phone:string,category:string){
+    
+    async merchantSignUp(email:string,password:string,phone:string){
        const existingMerchant = await this.repository.findMerchantByEmail(email)
        if(existingMerchant) return `User ${email} already exists`;
        const salt = await GenerateSalt()
-       const hashPassword = GeneratePassword(password, salt) as unknown as string;
-       return await this.repository.createMerchant({email,password: hashPassword,phone,salt,category})
-    }
+       const isMerchant = true
+       const hashPassword = await GeneratePassword(password, salt) as unknown as string;
+        const merchant= await this.repository.createMerchant({email,password: hashPassword,phone,salt,isMerchant})
+         return merchant;   
+      }
+
+      
     async merchantSignIn(email:string,password:string){
     const existingMerchant = await this.repository.findMerchantByEmail(email);
 
@@ -30,7 +35,13 @@ import { GeneratePassword, GenerateSalt, GenerateSignature, validatePassword } f
     if(!merchant) return "Merchant not found";
    return merchant;
  }
-   
+ async getmerchantProducts(merchantId:string){
+   const response = await RPCRequest("PRODUCT_RPC",{
+      type:"VIEW_MERCHANT_PRODUCTS",
+      data:merchantId
+    })
+   return response;
+ }
 }
 
 export default MerchantService;

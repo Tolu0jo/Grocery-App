@@ -17,4 +17,5 @@ export const MESSAGE_BROKER_URL = process.env.MESSAGE_BROKER_URL as string;
 export const EXCHANGE_NAME = process.env.EXCHANGE_NAME as string;
 export const SHOPPING_BINDING_KEY = process.env.SHOPPING_BINDING_KEY as string;
 export const CUSTOMER_BINDING_KEY = process.env.CUSTOMER_BINDING_KEY as string;
+export const PRODUCT_BINDING_KEY = process.env.PRODUCT_BINDING_KEY as string;
 export const QUEUE_NAME= process.env.QUEUE_NAME as string;

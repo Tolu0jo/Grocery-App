@@ -5,7 +5,7 @@ export type IMerchant = {
   password: string;
   salt: string;
   phone: string;
-  category: string;
+  isMerchant:boolean;
 };
 
 const MerchantSchema = new Schema(
@@ -14,7 +14,7 @@ const MerchantSchema = new Schema(
     password: String,
     salt: String,
     phone: String,
-    category: String,
+    isMerchant: Boolean,
   },
   {
     toJSON: {

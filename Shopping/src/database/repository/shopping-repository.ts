@@ -162,4 +162,13 @@ async GetWishListByCustomerId(customerId: string){
      ;
 
   }
+
+  async deleteProductInCartAndWishList(productId: string){
+    console.log(productId);
+    return Promise.all([CartModel.deleteMany({productId}),
+        WishlistModel.deleteMany({productId})]) ;
+
+ }
+
+
 }

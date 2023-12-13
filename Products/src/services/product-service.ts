@@ -17,10 +17,7 @@ class ProductService {
     }
   }
 
-async GetMerchantProducts(id:string){
-  const products = await this.repository.FindProductsByMerchant(id);
-      return formatData(products);
-}
+
   //GET PRODUCTS
   async GetProducts() {
     try {
@@ -62,11 +59,16 @@ async GetMerchantProducts(id:string){
     }
   }
 
+  async deleteProduct(merchantId: string, productId: string){
+    const product = await this.repository.FindProductById(productId);
+    if(!product) return {message: "Product not found"};
+    if(product.merchantId !== merchantId) return {message: "UnAuthorized"};
+    return await this.repository.deleteProduct(productId);
+  }
   //GET PRODUCT PAYLOAD
   async GetProductPayload(
     userId: string,
     { productId, qty }: ProductPayload,
-
     event: string
   ) {
     try {
@@ -90,14 +92,27 @@ async GetMerchantProducts(id:string){
      const {type,data} = payload;
      switch(type){
       case "VIEW_PRODUCT":
-       return this.repository.FindProductById(data)
-      break;
+       return this.repository.FindProductById(data);
       case "VIEW_PRODUCTS":
         return this.repository.FindSelectedProducts(data);
+      case "VIEW_MERCHANT_PRODUCTS":
+          return this.repository.FindProductsByMerchant(data);
+      default:
+        break;
+      
+  }
+}
+
+async SubscriberEvents (payload:any){
+  const{event, data} = JSON.parse(payload);
+
+  switch (event){
+    case "CREATE_PRODUCT":
+      await this.ProductCreate(data)
+      break;
       default:
         break;
   }
-  
 }
 };
 

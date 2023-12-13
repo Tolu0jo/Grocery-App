@@ -13,7 +13,7 @@ const channel = await CreateChannel()
 await expressApp(app, channel)
 
 app.listen(PORT,()=>{
-    console.log("Admin server listening on " + PORT + "...");
+    console.log("Merchant server listening on " + PORT + "...");
 })
 }
 startServer()

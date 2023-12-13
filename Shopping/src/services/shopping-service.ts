@@ -19,7 +19,6 @@ class ShoppingService {
         const data = await this.repository.ManageCart(customerId,productResponse,qty,false);
         return data;
       }
-     
   }
   async RemoveCartItem(customerId: string,productId:string){
       return await this.repository.ManageCart(customerId,{_id:productId},0,true);
@@ -90,8 +89,13 @@ class ShoppingService {
   }
 
   async deleteProfile(customerId:string){
-      return this.repository.deleteProfileData(customerId);
+      return await this.repository.deleteProfileData(customerId);
   }
+
+  async deleteProductFromCartAndWishlist(productId: string) {
+     return await this.repository.deleteProductInCartAndWishList(productId)
+  }
+
 
   async SubscriberEvents(payload:any){
     payload = JSON.parse(payload);
@@ -101,8 +105,12 @@ class ShoppingService {
       case "DELETE_PROFILE":
         await this.deleteProfile(data.userId)
         break;
+        case "DELETE_PRODUCT":
+          await this.deleteProductFromCartAndWishlist(data.productId)
+        break;
     }
   }
+
 }
 
 export default ShoppingService;

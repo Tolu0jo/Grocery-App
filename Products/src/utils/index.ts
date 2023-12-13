@@ -1,5 +1,5 @@
 import { verify} from "jsonwebtoken";
-import { APP_SECRET, CUSTOMER_BINDING_KEY, EXCHANGE_NAME, MESSAGE_BROKER_URL, QUEUE_NAME } from "../config";
+import { APP_SECRET, CUSTOMER_BINDING_KEY, EXCHANGE_NAME, MESSAGE_BROKER_URL, PRODUCT_BINDING_KEY, QUEUE_NAME } from "../config";
 import amqp from "amqplib"
 import{v4 as uuid4} from "uuid"
 
@@ -60,10 +60,11 @@ export const PublishMesage = async(channel:any,binding_key:string,message:any)=>
 export const SubscribeMessage= async(channel:any,service:any)=>{
 try {
   const appQueue = await channel.assertQueue(QUEUE_NAME);
-  channel.bindQueue(appQueue.queue,EXCHANGE_NAME,CUSTOMER_BINDING_KEY);
+  channel.bindQueue(appQueue.queue,EXCHANGE_NAME,PRODUCT_BINDING_KEY);
   channel.consume(appQueue.queue,(data:any)=>{
     console.log("recieved data: IN PRODUCT")
-    // console.log(data.content.toString());
+
+    service.SubscriberEvents(data.content.toString()) 
     channel.ack(data)
   })
 } catch (error) {
@@ -81,7 +82,7 @@ export const RPCObserver = async(RPC_QUEUE_NAME:string, service:any) => {
     RPC_QUEUE_NAME,
     async (msg:any) => {
       if (msg.content) {
-        console.log(msg)
+    
         // DB Operation
         const payload = JSON.parse(msg.content.toString());
         const response = await service.serveRPCRequest(payload);

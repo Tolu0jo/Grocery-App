@@ -1,5 +1,5 @@
 import { sign, verify} from "jsonwebtoken";
-import { APP_SECRET, CUSTOMER_BINDING_KEY, EXCHANGE_NAME, MESSAGE_BROKER_URL, QUEUE_NAME } from "../config";
+import { APP_SECRET, CUSTOMER_BINDING_KEY, EXCHANGE_NAME, MERCHANT_BINDING_KEY, MESSAGE_BROKER_URL, QUEUE_NAME } from "../config";
 import amqp from "amqplib"
 import{v4 as uuid4} from "uuid"
 import { genSalt, hash } from "bcryptjs";
@@ -62,27 +62,14 @@ export const CreateChannel = async()=>{
 }
 //publish messages
 export const PublishMesage = async(channel:any,binding_key:string,message:any)=>{
+
   try {
     await channel.publish(EXCHANGE_NAME,binding_key,Buffer.from(message));
-
   } catch (error) {
     console.log(error);
   }
 }
 
-//subscribe messages
-export const SubscribeMessage= async(channel:any,service:any)=>{
-try {
-  const appQueue = await channel.assertQueue(QUEUE_NAME);
-  channel.bindQueue(appQueue.queue,EXCHANGE_NAME,CUSTOMER_BINDING_KEY);
-  channel.consume(appQueue.queue,(data:any)=>{
-    console.log("recieved data: IN PRODUCT")
-    // console.log(data.content.toString());
-    channel.ack(data)
-  })
-} catch (error) {
-  console.log(error)
-} }
 
 
 export const RPCObserver = async(RPC_QUEUE_NAME:string, service:any) => {
@@ -95,8 +82,7 @@ export const RPCObserver = async(RPC_QUEUE_NAME:string, service:any) => {
     RPC_QUEUE_NAME,
     async (msg:any) => {
       if (msg.content) {
-        console.log(msg)
-        // DB Operation
+      
         const payload = JSON.parse(msg.content.toString());
         const response = await service.serveRPCRequest(payload);
         channel.sendToQueue(
@@ -113,6 +99,51 @@ export const RPCObserver = async(RPC_QUEUE_NAME:string, service:any) => {
       noAck: false,
     }
   );
+  
+};
+
+export const requestData = async (RPC_QUEUE_NAME:string, requestPayload:any, uuid:string) => {
+  try {
+    const channel = await getChannel();
+
+    const q = await channel.assertQueue("", { exclusive: true });
+
+    channel.sendToQueue(
+      RPC_QUEUE_NAME,
+      Buffer.from(JSON.stringify(requestPayload)),
+      {
+        replyTo: q.queue,
+        correlationId: uuid,
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      // timeout n
+    
+      channel.consume(
+        q.queue,
+        (msg:any) => {
+          if (msg.properties.correlationId == uuid) {
+            resolve(JSON.parse(msg.content.toString()));
+          
+          } else {
+            reject("data Not found!");
+          }
+        },
+        {
+          noAck: true,
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+    return "error";
+  }
+};
+
+export const RPCRequest = async (RPC_QUEUE_NAME:string, requestPayload:any) => {
+  const uuid = uuid4(); // correlationId
+  return await requestData(RPC_QUEUE_NAME, requestPayload, uuid);
 };
 
 
